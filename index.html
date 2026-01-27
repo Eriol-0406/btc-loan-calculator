@@ -50,9 +50,9 @@
         <div class="col">
             <h4 style="color: #888; margin-top:0;">CALCULATION RESULT</h4>
             <div class="res-row"><span>Market Price</span><span class="highlight" id="resPrice">RM 0.00</span></div>
-            <div class="res-row"><span>LVR</span><span class="highlight">50%</span></div>
+            <div class="res-row"><span>LVR</span><span class="highlight">70%</span></div>
             <div class="res-row"><span>Total Borrow Amount</span><span class="highlight" id="resBorrow">RM 0.00</span></div>
-            <div class="res-row"><span>Origination Fee (2%)</span><span class="highlight" id="resFee">RM 0.00</span></div>
+            <div class="res-row"><span>Stamp Fee (0.5%)</span><span class="highlight" id="resFee">RM 0.00</span></div>
             <div class="res-row"><span>Total Interest Payable (12%)</span><span class="highlight" id="resInterest">RM 0.00</span></div>
             
             <label style="display:block; margin-top:15px;">7-Day Price Trend (MYR)</label>
@@ -140,8 +140,8 @@
     function calculate() {
         const price = parseFloat(document.getElementById('btcPrice').value);
         const btc = parseFloat(document.getElementById('btcAmount').value) || 0;
-        const borrow = (btc * price) * 0.50;
-        const fee = borrow * 0.02;
+        const borrow = (btc * price) * 0.70;
+        const fee = borrow * 0.005;
         const interest = borrow * 0.12;
 
         document.getElementById('resPrice').innerText = "RM " + price.toLocaleString();
