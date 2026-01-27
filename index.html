@@ -77,4 +77,73 @@
     // Fetch Current Price
     async function fetchCurrentPrice() {
         try {
-            const res = await fetch('
+            const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=myr');
+            const data = await res.json();
+            document.getElementById('btcPrice').value = data.bitcoin.myr;
+            document.getElementById('status').innerText = "Live: RM " + data.bitcoin.myr.toLocaleString();
+        } catch(e) { document.getElementById('status').innerText = "Offline Mode"; }
+    }
+
+    // Fetch 7 Days of Historical Data
+    async function fetchTrendData() {
+        try {
+            const res = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=myr&days=7&interval=daily');
+            const data = await res.json();
+            
+            // Format labels (dates) and data points (prices)
+            const labels = data.prices.map(p => new Date(p[0]).toLocaleDateString('en-MY', {weekday: 'short'}));
+            const prices = data.prices.map(p => p[1]);
+
+            renderChart(labels, prices);
+        } catch(e) { console.error("Chart fetch failed", e); }
+    }
+
+    function renderChart(labels, prices) {
+        const ctx = document.getElementById('trendChart').getContext('2d');
+        if (myChart) myChart.destroy();
+
+        myChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'BTC Price (MYR)',
+                    data: prices,
+                    borderColor: '#ccff00',
+                    borderWidth: 2,
+                    pointRadius: 0,
+                    fill: true,
+                    backgroundColor: 'rgba(204, 255, 0, 0.05)',
+                    tension: 0.4
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { grid: { display: false }, ticks: { color: '#555', font: { size: 10 } } },
+                    y: { grid: { color: '#222' }, ticks: { display: false } }
+                }
+            }
+        });
+    }
+
+    function calculate() {
+        const price = parseFloat(document.getElementById('btcPrice').value);
+        const btc = parseFloat(document.getElementById('btcAmount').value) || 0;
+        
+        const borrow = (btc * price) * 0.50;
+        const fee = borrow * 0.02;
+        const interest = borrow * 0.12;
+
+        document.getElementById('resPrice').innerText = "RM " + price.toLocaleString();
+        document.getElementById('resBorrow').innerText = "RM " + borrow.toLocaleString();
+        document.getElementById('resFee').innerText = "RM " + fee.toLocaleString();
+        document.getElementById('resInterest').innerText = "RM " + interest.toLocaleString();
+    }
+
+    init();
+</script>
+</body>
+</html>
