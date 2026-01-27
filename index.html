@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Live BTC Loan Calc (MYR)</title>
+    <style>
+        :root { --bg: #0a0a0a; --neon: #ccff00; --text: #fff; }
+        body { background: #1a1a1a; color: var(--text); font-family: 'Inter', sans-serif; display: flex; justify-content: center; padding: 40px; }
+        .card { background: var(--bg); width: 850px; padding: 40px; border-radius: 15px; border: 1px solid #333; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .flex { display: flex; gap: 50px; }
+        .col { flex: 1; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 8px; border: 1px solid #444; background: #222; color: #fff; font-size: 16px; box-sizing: border-box; }
+        .btn-calc { background: var(--neon); color: #000; font-weight: 800; border: none; cursor: pointer; padding: 18px; width: 100%; border-radius: 8px; text-transform: uppercase; margin-top: 20px; }
+        .res-row { display: flex; justify-content: space-between; margin-bottom: 15px; font-size: 15px; }
+        .highlight { color: var(--neon); font-weight: bold; }
+        .status { font-size: 12px; color: #777; margin-bottom: 20px; text-align: right; }
+    </style>
+</head>
+<body>
+
+<div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h2>BTC Borrowing Power (MYR)</h2>
+        <div class="status" id="status">Fetching live price...</div>
+    </div>
+
+    <div class="flex">
+        <div class="col">
+            <label>Current BTC Price (MYR)</label>
+            <input type="number" id="btcPrice" value="349541">
+
+            <label>Collateral Amount (BTC)</label>
+            <input type="number" id="btcAmount" value="1.0" step="0.01" oninput="calculate()">
+
+            <label>Borrow Amount (MYR)</label>
+            <input type="number" id="myrAmount" placeholder="Calculated automatically..." readonly>
+
+            <button class="btn-calc" onclick="calculate()">Refresh Results</button>
+        </div>
+
+        <div class="col" style="border-left: 1px solid #333; padding-left: 40px;">
+            <h4 style="color: #888; margin-top:0;">BREAKDOWN</h4>
+            <div class="res-row"><span>Max LVR</span><span class="highlight">50%</span></div>
+            <div class="res-row"><span>Origination Fee (2%)</span><span class="highlight" id="resFee">RM 0.00</span></div>
+            <div class="res-row"><span>Annual Interest (12%)</span><span class="highlight" id="resInterest">RM 0.00</span></div>
+            <hr style="border:0; border-top:1px solid #333; margin: 20px 0;">
+            <div class="res-row" style="font-size: 18px;">
+                <span>Net Funds Issued</span>
+                <span class="highlight" id="resNet" style="font-size: 22px;">RM 0.00</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 1. Fetch live price from CoinGecko (Public/No Key)
+    async function getPrice() {
+        try {
+            const response = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=myr');
+            const data = await response.json();
+            const price = data.bitcoin.myr;
+            document.getElementById('btcPrice').value = price;
+            document.getElementById('status').innerText = "Live Price: RM " + price.toLocaleString();
+            calculate();
+        } catch (e) {
+            document.getElementById('status').innerText = "Using manual price (Offline Mode)";
+        }
+    }
+
+    function calculate() {
+        const price = parseFloat(document.getElementById('btcPrice').value);
+        const btc = parseFloat(document.getElementById('btcAmount').value) || 0;
+        
+        const loanValue = (btc * price) * 0.50;
+        const fee = loanValue * 0.02;
+        const net = loanValue - fee;
+        const interest = loanValue * 0.12;
+
+        document.getElementById('myrAmount').value = loanValue.toFixed(2);
+        document.getElementById('resFee').innerText = "RM " + fee.toLocaleString();
+        document.getElementById('resInterest').innerText = "RM " + interest.toLocaleString();
+        document.getElementById('resNet').innerText = "RM " + net.toLocaleString();
+    }
+
+    // Auto-fetch on load
+    getPrice();
+</script>
+</body>
+</html>
