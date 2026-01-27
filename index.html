@@ -2,29 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>BTC Loan Calc + Price Graph (MYR)</title>
+    <title>BTC Loan Calc + Price Trend (MYR)</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
     <style>
         :root { --bg: #0a0a0a; --neon: #83EEFF; --text: #fff; --gray: #222; }
         body { background: #1a1a1a; color: var(--text); font-family: 'Segoe UI', sans-serif; display: flex; justify-content: center; padding: 20px; }
-        .card { background: var(--bg); width: 950px; padding: 40px; border-radius: 15px; border: 1px solid #333; box-shadow: 0 10px 40px rgba(0,0,0,0.7); }
+        .card { background: var(--bg); width: 900px; padding: 40px; border-radius: 15px; border: 1px solid #333; box-shadow: 0 10px 40px rgba(0,0,0,0.7); }
         .flex { display: flex; gap: 40px; margin-top: 20px; }
         .col { flex: 1; }
-        label { font-size: 11px; color: #888; text-transform: uppercase; font-weight: bold; letter-spacing: 1px; }
+        
+        label { font-size: 12px; color: #888; text-transform: uppercase; font-weight: bold; }
         input { width: 100%; padding: 14px; margin: 8px 0 20px 0; border-radius: 8px; border: 1px solid #444; background: var(--gray); color: #fff; font-size: 16px; box-sizing: border-box; }
-        .btn-calc { background: var(--neon); color: #000; font-weight: 800; border: none; cursor: pointer; padding: 16px; width: 100%; border-radius: 8px; text-transform: uppercase; }
-        .chart-container { background: #111; padding: 30px 20px 10px 20px; border-radius: 10px; border: 1px solid #333; margin-top: 20px; height: 320px; }
-        .res-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; border-bottom: 1px solid #1a1a1a; padding-bottom: 5px; }
+        .btn-calc { background: var(--neon); color: #000; font-weight: 800; border: none; cursor: pointer; padding: 16px; width: 100%; border-radius: 8px; text-transform: uppercase; transition: 0.2s; }
+        .btn-calc:hover { transform: translateY(-2px); box-shadow: 0 5px 15px rgba(204, 255, 0, 0.3); }
+
+        .chart-container { background: #111; padding: 20px; border-radius: 10px; border: 1px solid #333; margin-top: 20px; height: 300px; }
+        
+        .res-row { display: flex; justify-content: space-between; margin-bottom: 12px; font-size: 14px; }
         .highlight { color: var(--neon); font-weight: bold; }
-        .status { font-size: 11px; color: #555; }
+        .status { font-size: 11px; color: #555; text-align: right; }
+        h2 { margin: 0; font-size: 24px; }
     </style>
 </head>
 <body>
 
 <div class="card">
     <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid #333; padding-bottom: 15px;">
-        <h2 style="margin:0;">BTC Borrowing Calculator</h2>
+        <h2>Borrowing Bitcoin calculator</h2>
         <div id="status" class="status">Initializing...</div>
     </div>
 
@@ -32,20 +37,25 @@
         <div class="col">
             <label>Current Price (MYR)</label>
             <input type="number" id="btcPrice" value="349541">
-            <label>Collateral (BTC)</label>
+
+            <label>Collateral Asset</label>
+            <input type="text" value="BTC (Bitcoin)" disabled>
+
+            <label>Collateral Amount (BTC)</label>
             <input type="number" id="btcAmount" value="1.0" step="0.01" oninput="calculate()">
+
             <button class="btn-calc" onclick="calculate()">Recalculate</button>
-            
-            <div style="margin-top:30px;">
-                <h4 style="color: #888; font-size: 12px; margin-bottom: 15px;">LOAN SUMMARY</h4>
-                <div class="res-row"><span>Total Borrow</span><span class="highlight" id="resBorrow">RM 0.00</span></div>
-                <div class="res-row"><span>Origination Fee</span><span class="highlight" id="resFee">RM 0.00</span></div>
-                <div class="res-row"><span>Net Funds Out</span><span class="highlight" id="resNet" style="font-size: 18px;">RM 0.00</span></div>
-            </div>
         </div>
 
         <div class="col">
-            <label>7-Day Price Trend (MYR)</label>
+            <h4 style="color: #888; margin-top:0;">CALCULATION RESULT</h4>
+            <div class="res-row"><span>Market Price</span><span class="highlight" id="resPrice">RM 0.00</span></div>
+            <div class="res-row"><span>LVR</span><span class="highlight">50%</span></div>
+            <div class="res-row"><span>Total Borrow Amount</span><span class="highlight" id="resBorrow">RM 0.00</span></div>
+            <div class="res-row"><span>Origination Fee (2%)</span><span class="highlight" id="resFee">RM 0.00</span></div>
+            <div class="res-row"><span>Total Interest Payable</span><span class="highlight" id="resInterest">RM 0.00</span></div>
+            
+            <label style="display:block; margin-top:15px;">7-Day Price Trend (MYR)</label>
             <div class="chart-container">
                 <canvas id="trendChart"></canvas>
             </div>
@@ -54,13 +64,14 @@
 </div>
 
 <script>
-    let myChart;
     // Register the datalabels plugin
     Chart.register(ChartDataLabels);
+    let myChart;
 
     async function init() {
         await fetchCurrentPrice();
         await fetchTrendData();
+        calculate();
     }
 
     async function fetchCurrentPrice() {
@@ -68,9 +79,8 @@
             const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=myr');
             const data = await res.json();
             document.getElementById('btcPrice').value = data.bitcoin.myr;
-            document.getElementById('status').innerText = "Last Updated: " + new Date().toLocaleTimeString();
-            calculate();
-        } catch(e) { document.getElementById('status').innerText = "Manual Mode (Offline)"; }
+            document.getElementById('status').innerText = "Live: RM " + data.bitcoin.myr.toLocaleString();
+        } catch(e) { document.getElementById('status').innerText = "Offline Mode"; }
     }
 
     async function fetchTrendData() {
@@ -78,7 +88,7 @@
             const res = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=myr&days=7&interval=daily');
             const data = await res.json();
             const labels = data.prices.map(p => new Date(p[0]).toLocaleDateString('en-MY', {weekday: 'short'}));
-            const prices = data.prices.map(p => Math.round(p[1]));
+            const prices = data.prices.map(p => p[1]);
             renderChart(labels, prices);
         } catch(e) { console.error("Chart fetch failed", e); }
     }
@@ -92,37 +102,36 @@
             data: {
                 labels: labels,
                 datasets: [{
+                    label: 'BTC Price',
                     data: prices,
                     borderColor: '#83EEFF',
-                    backgroundColor: 'rgba(131, 238, 255);',
-                    fill: true,
-                    tension: 0.4,
+                    borderWidth: 2,
                     pointRadius: 4,
-                    pointBackgroundColor: '#83EEFF'
+                    pointBackgroundColor: '#83EEFF',
+                    fill: true,
+                    backgroundColor: 'rgba(131, 238, 255)',
+                    tension: 0.4
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                layout: { padding: { top: 20, right: 20 } },
+                layout: {
+                    padding: { top: 30 } // Space for the labels at the top
+                },
                 plugins: {
                     legend: { display: false },
-                    // Configuration for the data labels plugin
                     datalabels: {
+                        color: '#83EEFF',
                         align: 'top',
-                        color: '#ccff00',
-                        font: { weight: 'bold', size: 10 },
-                        formatter: (value) => 'RM ' + (value/1000).toFixed(1) + 'k' // Shortens RM 350,000 to RM 350.0k
-                    },
-                    tooltip: {
-                        callbacks: {
-                            label: (context) => 'RM ' + context.parsed.y.toLocaleString()
-                        }
+                        offset: 8,
+                        font: { size: 10, weight: 'bold' },
+                        formatter: (value) => 'RM ' + Math.round(value).toLocaleString() // Show price
                     }
                 },
                 scales: {
-                    x: { grid: { display: false }, ticks: { color: '#666' } },
-                    y: { display: false } // Hide Y-axis for a cleaner look since we have labels on points
+                    x: { grid: { display: false }, ticks: { color: '#555' } },
+                    y: { display: false } // Hide Y axis to keep it clean since prices are on the points
                 }
             }
         });
@@ -133,10 +142,12 @@
         const btc = parseFloat(document.getElementById('btcAmount').value) || 0;
         const borrow = (btc * price) * 0.50;
         const fee = borrow * 0.02;
+        const interest = borrow * 0.12;
 
+        document.getElementById('resPrice').innerText = "RM " + price.toLocaleString();
         document.getElementById('resBorrow').innerText = "RM " + borrow.toLocaleString();
         document.getElementById('resFee').innerText = "RM " + fee.toLocaleString();
-        document.getElementById('resNet').innerText = "RM " + (borrow - fee).toLocaleString();
+        document.getElementById('resInterest').innerText = "RM " + interest.toLocaleString();
     }
 
     init();
