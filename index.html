@@ -90,8 +90,8 @@
         try {
             const res = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=myr&days=7&interval=daily');
             const data = await res.json();
-            const labels = data.prices.map(p => new Date(p[0]).toLocaleDateString('en-MY', {weekday: 'short'}));
-            const prices = data.prices.map(p => p[1]);
+            const labels = data.prices.map(p => new Date(p[0]).toLocaleDateString('en-MY', {weekday: 'short'})).slice(-7);
+            const prices = data.prices.map(p => p[1]).slice(-7);
             renderChart(labels, prices);
         } catch(e) { console.error("Chart fetch failed", e); }
     }
@@ -120,21 +120,28 @@
                 responsive: true,
                 maintainAspectRatio: false,
                 layout: {
-                    padding: { top: 30 } // Space for the labels at the top
+                    padding: { top: 40, left: 10, right: 10 } // Space for the labels at the top
                 },
                 plugins: {
                     legend: { display: false },
                     datalabels: {
                         color: '#83EEFF',
                         align: 'top',
-                        offset: 8,
-                        font: { size: 10, weight: 'bold' },
+                        offset: 10,
+                        font: { size: 9, weight: 'bold' },
                         formatter: (value) => 'RM ' + Math.round(value).toLocaleString() // Show price
                     }
                 },
                 scales: {
-                    x: { grid: { display: false }, ticks: { color: '#555' } },
-                    y: { display: false } // Hide Y axis to keep it clean since prices are on the points
+                    x: { 
+                        grid: { display: false }, 
+                        ticks: { 
+                            color: '#555',
+                            autoSkip: false, // Force every day to show
+                            maxRotation: 0   // Keep labels horizontal
+                        } 
+                    },
+                    y: { display: false } 
                 }
             }
         });
