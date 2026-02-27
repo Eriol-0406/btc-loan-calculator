@@ -549,11 +549,16 @@ function setTenure(months, el) {
     calculate();
 }
 
-function fmt(n) { return 'RM ' + Math.round(n).toLocaleString('en-MY'); }
+function fmt(n) { 
+    return 'RM ' + Math.round(n).toLocaleString('en-MY'，{
+        minimumFractionDigits:2,
+        maximumFractionDigits:2,
+    });
+}
 
 function calculate() {
-    const price = parseFloat(document.getElementById('btcPrice').value) || 0;
-    const btc = parseFloat(document.getElementById('btcAmount').value) || 0;
+    const price = parseFloat(document.getElementById('btcPrice').value) || 0.00;
+    const btc = parseFloat(document.getElementById('btcAmount').value) || 0.00;
     const months = parseInt(document.getElementById('tenureSlider').value) || 12;
     const rate = getRateForMonths(months);
 
@@ -646,7 +651,10 @@ function renderChart(labels, prices) {
                     align: 'top',
                     offset: 8,
                     font: { size: 8.5, weight: 'bold', family: 'Space Mono' },
-                    formatter: v => 'RM ' + Math.round(v).toLocaleString()
+                    formatter: v => 'RM ' + v.toLocaleString('en-MY', {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2
+                    })
                 }
             },
             scales: {
