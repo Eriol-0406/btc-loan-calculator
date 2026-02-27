@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>BTC Loan Calculator (MYR)</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #080b10;
+            --card: #0d1117;
+            --panel: #111820;
+            --neon: #83EEFF;
+            --neon2: #B5FF6D;
+            --accent: #FF6B6B;
+            --text: #e8edf5;
+            --muted: #4a5568;
+            --border: #1e2a38;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: 'DM Sans', sans-serif;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding: 30px 20px;
+            background-image:
+                radial-gradient(ellipse at 10% 0%, rgba(131,238,255,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 90% 100%, rgba(181,255,109,0.03) 0%, transparent 50%);
+        }
+
+        .card {
+            background: var(--card);
+            width: 960px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.8), 0 0 0 1px rgba(131,238,255,0.05);
+            overflow: hidden;
+        }
+
+        .card-header {
+            padding: 28px 40px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: linear-gradient(135deg, #0d1117 0%, #111820 100%);
+        }
+
+        .card-header h2 {
+            font-family: 'Space Mono', monospace;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            letter-spacing: -0.5px;
+        }
+
+        .card-header h2 span { color: var(--neon); }
+
+        .live-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: var(--muted);
+            font-family: 'Space Mono', monospace;
+        }
+
+        .live-dot {
+            width: 7px; height: 7px;
+            background: var(--neon2);
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; box-shadow: 0 0 0 0 rgba(181,255,109,0.4); }
+            50% { opacity: 0.7; box-shadow: 0 0 0 5px rgba(181,255,109,0); }
+        }
+
+        .body { display: flex; gap: 0; }
+
+        /* LEFT PANEL */
+        .left-panel {
+            width: 380px;
+            flex-shrink: 0;
+            padding: 32px 36px;
+            border-right: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .field-label {
+            font-size: 10px;
+            font-family: 'Space Mono', monospace;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        input[type="number"], input[type="text"] {
+            width: 100%;
+            padding: 13px 16px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: var(--text);
+            font-size: 15px;
+            font-family: 'DM Sans', sans-serif;
+            margin-bottom: 22px;
+            transition: border-color 0.2s;
+            outline: none;
+        }
+
+        input:focus { border-color: rgba(131,238,255,0.4); }
+        input:disabled { color: var(--muted); cursor: not-allowed; }
+
+        /* TENURE SELECTOR */
+        .tenure-section { margin-bottom: 22px; }
+        .tenure-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        .tenure-rate-badge {
+            font-family: 'Space Mono', monospace;
+            font-size: 11px;
+            background: rgba(131,238,255,0.1);
+            color: var(--neon);
+            border: 1px solid rgba(131,238,255,0.2);
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+
+        .tenure-slider-wrap { position: relative; }
+
+        input[type="range"] {
+            width: 100%;
+            -webkit-appearance: none;
+            background: transparent;
+            cursor: pointer;
+            margin: 0;
+            padding: 0;
+            margin-bottom: 10px;
+        }
+
+        input[type="range"]::-webkit-slider-runnable-track {
+            height: 5px;
+            border-radius: 5px;
+            background: linear-gradient(to right, var(--neon) 0%, var(--neon) var(--pct, 0%), var(--border) var(--pct, 0%), var(--border) 100%);
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px; height: 20px;
+            border-radius: 50%;
+            background: var(--neon);
+            margin-top: -7px;
+            box-shadow: 0 0 12px rgba(131,238,255,0.6);
+            transition: box-shadow 0.2s;
+        }
+
+        input[type="range"]:hover::-webkit-slider-thumb {
+            box-shadow: 0 0 20px rgba(131,238,255,0.9);
+        }
+
+        .tenure-months-display {
+            text-align: center;
+            font-family: 'Space Mono', monospace;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--neon);
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+
+        .tenure-months-sub {
+            text-align: center;
+            font-size: 11px;
+            color: var(--muted);
+            margin-bottom: 14px;
+        }
+
+        .tenure-tiers {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 22px;
+        }
+
+        .tier-btn {
+            flex: 1;
+            padding: 7px 0;
+            border-radius: 7px;
+            border: 1px solid var(--border);
+            background: var(--panel);
+            color: var(--muted);
+            font-size: 10px;
+            font-family: 'Space Mono', monospace;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            line-height: 1.3;
+        }
+
+        .tier-btn:hover { border-color: var(--neon); color: var(--neon); }
+        .tier-btn.active {
+            border-color: var(--neon);
+            background: rgba(131,238,255,0.08);
+            color: var(--neon);
+        }
+
+        .tier-btn .tier-months { font-weight: 700; font-size: 11px; }
+        .tier-btn .tier-rate { font-size: 9px; opacity: 0.7; }
+
+        .btn-calc {
+            background: var(--neon);
+            color: #000;
+            font-weight: 700;
+            font-family: 'Space Mono', monospace;
+            border: none;
+            cursor: pointer;
+            padding: 15px;
+            width: 100%;
+            border-radius: 10px;
+            text-transform: uppercase;
+            font-size: 13px;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+            margin-top: 4px;
+        }
+
+        .btn-calc:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(131,238,255,0.35);
+        }
+
+        .btc-note {
+            margin-top: 20px;
+            padding: 12px 14px;
+            border-radius: 10px;
+            background: rgba(181,255,109,0.05);
+            border: 1px solid rgba(181,255,109,0.15);
+        }
+
+        .btc-note p {
+            font-size: 11px;
+            color: #8a9a7a;
+            line-height: 1.6;
+        }
+
+        .btc-note strong { color: var(--neon2); }
+
+        .btc-note a {
+            color: rgba(181,255,109,0.5);
+            font-size: 10px;
+            text-decoration: none;
+        }
+
+        .btc-note a:hover { color: var(--neon2); text-decoration: underline; }
+
+        /* RIGHT PANEL */
+        .right-panel {
+            flex: 1;
+            padding: 32px 36px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .results-header {
+            font-family: 'Space Mono', monospace;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--muted);
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .res-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .res-box {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px 18px;
+            transition: border-color 0.3s;
+        }
+
+        .res-box:hover { border-color: rgba(131,238,255,0.2); }
+
+        .res-box.full { grid-column: 1 / -1; }
+
+        .res-box.highlight-box {
+            border-color: rgba(131,238,255,0.3);
+            background: rgba(131,238,255,0.05);
+        }
+
+        .res-box .res-label {
+            font-size: 10px;
+            font-family: 'Space Mono', monospace;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        .res-box .res-value {
+            font-family: 'Space Mono', monospace;
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--neon);
+        }
+
+        .res-box .res-value.big {
+            font-size: 24px;
+            color: var(--neon2);
+        }
+
+        .res-box .res-sub {
+            font-size: 10px;
+            color: var(--muted);
+            margin-top: 4px;
+        }
+
+        .quarterly-section { margin-bottom: 20px; }
+        .quarterly-title {
+            font-size: 10px;
+            font-family: 'Space Mono', monospace;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 12px;
+        }
+
+        .quarterly-list { display: flex; flex-direction: column; gap: 6px; }
+
+        .q-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 9px 14px;
+            background: var(--panel);
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            font-size: 12px;
+        }
+
+        .q-row .q-date { color: var(--muted); font-family: 'Space Mono', monospace; font-size: 11px; }
+        .q-row .q-amt { color: var(--neon); font-family: 'Space Mono', monospace; font-weight: 700; font-size: 12px; }
+
+        .chart-label {
+            font-size: 10px;
+            font-family: 'Space Mono', monospace;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 10px;
+        }
+
+        .chart-wrap {
+            background: var(--panel);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            height: 180px;
+            flex-shrink: 0;
+        }
+    </style>
+</head>
+<body>
+<div class="card">
+    <div class="card-header">
+        <h2>Borrowing <span>Bitcoin</span> Calculator</h2>
+        <div class="live-badge">
+            <div class="live-dot"></div>
+            <span id="status">Fetching live price...</span>
+        </div>
+    </div>
+
+    <div class="body">
+        <!-- LEFT -->
+        <div class="left-panel">
+            <div class="field-label">Current Price (MYR)</div>
+            <input type="number" id="btcPrice" value="349541" oninput="calculate()">
+
+            <div class="field-label">Collateral Asset</div>
+            <input type="text" value="BTC (Bitcoin)" disabled>
+
+            <div class="field-label">Collateral Amount (BTC)</div>
+            <input type="number" id="btcAmount" value="1.0" step="0.01" oninput="calculate()">
+
+            <!-- TENURE -->
+            <div class="tenure-section">
+                <div class="tenure-label-row">
+                    <div class="field-label" style="margin:0">Loan Tenure</div>
+                    <div class="tenure-rate-badge" id="rateLabel">12% p.a.</div>
+                </div>
+
+                <div class="tenure-months-display" id="tenureDisplay">12</div>
+                <div class="tenure-months-sub">months selected</div>
+
+                <input type="range" id="tenureSlider" min="3" max="60" value="12" oninput="onSlider()">
+
+                <div class="tenure-tiers">
+                    <div class="tier-btn active" onclick="setTenure(12, this)">
+                        <div class="tier-months">3–12</div>
+                        <div class="tier-rate">12%</div>
+                    </div>
+                    <div class="tier-btn" onclick="setTenure(24, this)">
+                        <div class="tier-months">13–24</div>
+                        <div class="tier-rate">11.5%</div>
+                    </div>
+                    <div class="tier-btn" onclick="setTenure(36, this)">
+                        <div class="tier-months">25–36</div>
+                        <div class="tier-rate">11%</div>
+                    </div>
+                    <div class="tier-btn" onclick="setTenure(48, this)">
+                        <div class="tier-months">37–48</div>
+                        <div class="tier-rate">10.5%</div>
+                    </div>
+                    <div class="tier-btn" onclick="setTenure(60, this)">
+                        <div class="tier-months">49–60</div>
+                        <div class="tier-rate">10%</div>
+                    </div>
+                </div>
+            </div>
+
+            <button class="btn-calc" onclick="calculate()">Recalculate</button>
+
+            <div class="btc-note">
+                <p>📈 <strong>Did you know?</strong> Bitcoin has historically appreciated approximately <strong>~8% annually</strong> on a long-term average basis, which may help offset your loan costs over time.</p>
+                <p style="margin-top:6px"><a href="https://www.macrotrends.net/2602/bitcoin-usd-live-price-chart" target="_blank">Source: Macrotrends — Bitcoin Price History ↗</a></p>
+            </div>
+        </div>
+
+        <!-- RIGHT -->
+        <div class="right-panel">
+            <div class="results-header">Calculation Result</div>
+
+            <div class="res-grid">
+                <div class="res-box">
+                    <div class="res-label">Market Price</div>
+                    <div class="res-value" id="resPrice">RM 0</div>
+                </div>
+                <div class="res-box">
+                    <div class="res-label">LVR</div>
+                    <div class="res-value">70%</div>
+                </div>
+                <div class="res-box">
+                    <div class="res-label">Total Borrow Amount</div>
+                    <div class="res-value" id="resBorrow">RM 0</div>
+                </div>
+                <div class="res-box">
+                    <div class="res-label">Stamp Fee (0.5%)</div>
+                    <div class="res-value" id="resFee">RM 0</div>
+                </div>
+                <div class="res-box">
+                    <div class="res-label">Interest Rate (p.a.)</div>
+                    <div class="res-value" id="resRate">12%</div>
+                    <div class="res-sub" id="resTenureSub">12 months</div>
+                </div>
+                <div class="res-box">
+                    <div class="res-label">Total Interest Payable</div>
+                    <div class="res-value" id="resInterest">RM 0</div>
+                </div>
+                <div class="res-box full highlight-box">
+                    <div class="res-label">Total Amount to Pay</div>
+                    <div class="res-value big" id="resTotal">RM 0</div>
+                </div>
+            </div>
+
+            <div class="quarterly-section">
+                <div class="quarterly-title">Quarterly Interest Breakdown</div>
+                <div class="quarterly-list" id="quarterlyList"></div>
+            </div>
+
+            <div class="chart-label">7-Day Price Trend (MYR)</div>
+            <div class="chart-wrap">
+                <canvas id="trendChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+Chart.register(ChartDataLabels);
+let myChart;
+
+const tiers = [
+    { min: 3,  max: 12, rate: 0.12 },
+    { min: 13, max: 24, rate: 0.115 },
+    { min: 25, max: 36, rate: 0.11 },
+    { min: 37, max: 48, rate: 0.105 },
+    { min: 49, max: 60, rate: 0.10 },
+];
+
+function getRateForMonths(m) {
+    return tiers.find(t => m >= t.min && m <= t.max)?.rate ?? 0.12;
+}
+
+function updateSliderTrack() {
+    const sl = document.getElementById('tenureSlider');
+    const pct = ((sl.value - sl.min) / (sl.max - sl.min)) * 100;
+    sl.style.setProperty('--pct', pct + '%');
+}
+
+function highlightTierBtn(months) {
+    document.querySelectorAll('.tier-btn').forEach(b => b.classList.remove('active'));
+    const tier = tiers.find(t => months >= t.min && months <= t.max);
+    if (tier) {
+        const idx = tiers.indexOf(tier);
+        document.querySelectorAll('.tier-btn')[idx].classList.add('active');
+    }
+}
+
+function onSlider() {
+    const val = parseInt(document.getElementById('tenureSlider').value);
+    document.getElementById('tenureDisplay').textContent = val;
+    updateSliderTrack();
+    highlightTierBtn(val);
+    const rate = getRateForMonths(val);
+    document.getElementById('rateLabel').textContent = (rate * 100).toFixed(1) + '% p.a.';
+    calculate();
+}
+
+function setTenure(months, el) {
+    document.getElementById('tenureSlider').value = months;
+    document.getElementById('tenureDisplay').textContent = months;
+    document.querySelectorAll('.tier-btn').forEach(b => b.classList.remove('active'));
+    el.classList.add('active');
+    updateSliderTrack();
+    const rate = getRateForMonths(months);
+    document.getElementById('rateLabel').textContent = (rate * 100).toFixed(1) + '% p.a.';
+    calculate();
+}
+
+function fmt(n) { return 'RM ' + Math.round(n).toLocaleString('en-MY'); }
+
+function calculate() {
+    const price = parseFloat(document.getElementById('btcPrice').value) || 0;
+    const btc = parseFloat(document.getElementById('btcAmount').value) || 0;
+    const months = parseInt(document.getElementById('tenureSlider').value) || 12;
+    const rate = getRateForMonths(months);
+
+    const borrow = btc * price * 0.70;
+    const fee = borrow * 0.005;
+    const interest = borrow * rate * (months / 12);
+    const total = borrow + fee + interest;
+
+    document.getElementById('resPrice').textContent = fmt(price);
+    document.getElementById('resBorrow').textContent = fmt(borrow);
+    document.getElementById('resFee').textContent = fmt(fee);
+    document.getElementById('resRate').textContent = (rate * 100).toFixed(1) + '%';
+    document.getElementById('resTenureSub').textContent = months + ' months';
+    document.getElementById('resInterest').textContent = fmt(interest);
+    document.getElementById('resTotal').textContent = fmt(total);
+
+    // Quarterly interest
+    const quarters = Math.ceil(months / 3);
+    const qInterest = (borrow * rate) / 4;
+    const listEl = document.getElementById('quarterlyList');
+    listEl.innerHTML = '';
+
+    const startDate = new Date();
+    for (let i = 1; i <= Math.min(quarters, 6); i++) {
+        const d = new Date(startDate);
+        d.setMonth(d.getMonth() + i * 3);
+        const row = document.createElement('div');
+        row.className = 'q-row';
+        row.innerHTML = `<span class="q-date">${d.toLocaleDateString('en-MY', {day:'2-digit', month:'2-digit', year:'numeric'})}</span><span class="q-amt">${fmt(qInterest)}</span>`;
+        listEl.appendChild(row);
+    }
+    if (quarters > 6) {
+        const more = document.createElement('div');
+        more.className = 'q-row';
+        more.style.color = '#4a5568';
+        more.style.fontSize = '11px';
+        more.style.justifyContent = 'center';
+        more.textContent = `+ ${quarters - 6} more quarters...`;
+        listEl.appendChild(more);
+    }
+}
+
+async function fetchCurrentPrice() {
+    try {
+        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=myr');
+        const data = await res.json();
+        document.getElementById('btcPrice').value = data.bitcoin.myr;
+        document.getElementById('status').textContent = 'Live · RM ' + data.bitcoin.myr.toLocaleString();
+    } catch(e) {
+        document.getElementById('status').textContent = 'Offline Mode';
+    }
+}
+
+async function fetchTrendData() {
+    try {
+        const res = await fetch('https://api.coingecko.com/api/v3/coins/bitcoin/market_chart?vs_currency=myr&days=7&interval=daily');
+        const data = await res.json();
+        const labels = data.prices.slice(-7).map(p => new Date(p[0]).toLocaleDateString('en-MY', {weekday:'short'}));
+        const prices = data.prices.slice(-7).map(p => p[1]);
+        renderChart(labels, prices);
+    } catch(e) { console.error('Chart fetch failed', e); }
+}
+
+function renderChart(labels, prices) {
+    const ctx = document.getElementById('trendChart').getContext('2d');
+    if (myChart) myChart.destroy();
+    myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels,
+            datasets: [{
+                data: prices,
+                borderColor: '#83EEFF',
+                borderWidth: 2,
+                pointRadius: 4,
+                pointBackgroundColor: '#83EEFF',
+                fill: true,
+                backgroundColor: 'rgba(131,238,255,0.06)',
+                tension: 0.4
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            layout: { padding: { top: 35, left: 5, right: 5 } },
+            plugins: {
+                legend: { display: false },
+                datalabels: {
+                    color: '#83EEFF',
+                    align: 'top',
+                    offset: 8,
+                    font: { size: 8.5, weight: 'bold', family: 'Space Mono' },
+                    formatter: v => 'RM ' + Math.round(v).toLocaleString()
+                }
+            },
+            scales: {
+                x: { grid: { display: false }, ticks: { color: '#4a5568', font: { size: 10 }, maxRotation: 0 } },
+                y: { display: false }
+            }
+        }
+    });
+}
+
+async function init() {
+    updateSliderTrack();
+    await fetchCurrentPrice();
+    calculate();
+    await fetchTrendData();
+}
+
+init();
+</script>
+</body>
+</html>
