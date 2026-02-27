@@ -31,7 +31,7 @@ That's it — the calculator will load and fetch the live BTC price automaticall
 
 bash# Optional: serve locally with Python
 python -m http.server 8080
-# Then open http://localhost:8080/btc_loan_calc.html
+# Then open http://localhost:8080/index.html
 
 🧮 How It Works
 The calculator uses the following formulas:
@@ -94,7 +94,7 @@ MIT License. Free to use, modify, and distribute.
 
 bash# 可选：使用 Python 本地托管
 python -m http.server 8080
-# 然后打开 http://localhost:8080/btc_loan_calc.html
+# 然后打开 http://localhost:8080/index.html
 
 🧮 计算逻辑
 计算器使用以下公式：
