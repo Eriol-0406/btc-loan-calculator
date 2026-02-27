@@ -1,3 +1,5 @@
+# Open (https://eriol-0406.github.io/btc-loan-calculator/) to preview
+
 📊 BTC Borrowing Power Calculator (MYR)
 
 A sleek, browser-based Bitcoin loan calculator that fetches live BTC/MYR prices, applies tenure-based interest rates, and displays a 7-day price trend chart — no backend required.
@@ -28,10 +30,6 @@ No installation or build step needed. This is a single HTML file.
 Download or clone this repository.
 Open btc_loan_calc.html in any modern web browser (Chrome, Firefox, Edge, Safari).
 That's it — the calculator will load and fetch the live BTC price automatically.
-
-bash# Optional: serve locally with Python
-python -m http.server 8080
-# Then open http://localhost:8080/index.html
 
 🧮 How It Works
 The calculator uses the following formulas:
@@ -91,10 +89,6 @@ MIT License. Free to use, modify, and distribute.
 下载或克隆本仓库。
 使用任意现代浏览器（Chrome、Firefox、Edge、Safari）直接打开 btc_loan_calc.html。
 完成！计算器会自动加载并获取实时 BTC 价格。
-
-bash# 可选：使用 Python 本地托管
-python -m http.server 8080
-# 然后打开 http://localhost:8080/index.html
 
 🧮 计算逻辑
 计算器使用以下公式：
