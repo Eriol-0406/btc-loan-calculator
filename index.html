@@ -651,10 +651,7 @@ function renderChart(labels, prices) {
                     align: 'top',
                     offset: 8,
                     font: { size: 8.5, weight: 'bold', family: 'Space Mono' },
-                    formatter: v => 'RM ' + v.toLocaleString('en-MY', {
-                        minimumFractionDigits: 2,
-                        maximumFractionDigits: 2
-                    })
+                    formatter: v => 'RM ' + v.toLocaleString()
                 }
             },
             scales: {
