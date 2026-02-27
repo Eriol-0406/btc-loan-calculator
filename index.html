@@ -557,8 +557,8 @@ function fmt(n) {
 }
 
 function calculate() {
-    const price = parseFloat(document.getElementById('btcPrice').value) || 0.00;
-    const btc = parseFloat(document.getElementById('btcAmount').value) || 0.00;
+    const price = parseFloat(document.getElementById('btcPrice').value) || 0;
+    const btc = parseFloat(document.getElementById('btcAmount').value) || 0;
     const months = parseInt(document.getElementById('tenureSlider').value) || 12;
     const rate = getRateForMonths(months);
 
