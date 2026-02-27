@@ -11,11 +11,11 @@ Live BTC/MYR Price — Automatically fetches the current Bitcoin price in Malays
 Collateral-Based Borrowing — Calculates your maximum borrow amount using a 70% Loan-to-Value Ratio (LVR) against your BTC holdings.
 Tenure-Based Interest Rates — Interest rate adjusts automatically based on your chosen loan tenure:
 Tenure Annual Interest Rate
-3 – 12 months12.0%
-13 – 24 months11.5%
-25 – 36 months11.0%
-37 – 48 months10.5%
-49 – 60 months10.0%
+3 – 12 months  12.0%
+13 – 24 months 11.5%
+25 – 36 months 11.0%
+37 – 48 months 10.5%
+49 – 60 months 10.0%
 
 Interactive Tenure Slider — Drag the slider (3–60 months) or use quick-select tier buttons to choose your loan period.
 Full Cost Breakdown — Displays borrow amount, 0.5% stamp fee, total interest payable, and total repayment amount.
@@ -70,11 +70,11 @@ MIT License. Free to use, modify, and distribute.
 抵押品借款计算 — 以您的 BTC 持仓为抵押，按 70% 贷款价值比（LVR）计算最高可借金额。
 分期利率体系 — 利率根据您选择的贷款期限自动调整：
 贷款期限年利率
-3 – 12 个月12.0%
-13 – 24 个月11.5%
-25 – 36 个月11.0%
-37 – 48 个月10.5%
-49 – 60 个月10.0%
+3 – 12  个月 12.0%
+13 – 24 个月 11.5%
+25 – 36 个月 11.0%
+37 – 48 个月 10.5%
+49 – 60 个月 10.0%
 
 交互式期限滑块 — 拖动滑块（3–60 个月）或点击快捷选择按钮，灵活设定贷款期限。
 费用全面拆解 — 显示借款金额、0.5% 印花税、总利息及总还款金额。
