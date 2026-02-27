@@ -8,7 +8,12 @@ A sleek, browser-based Bitcoin loan calculator that fetches live BTC/MYR prices,
 Live BTC/MYR Price — Automatically fetches the current Bitcoin price in Malaysian Ringgit via the CoinGecko API on load.
 Collateral-Based Borrowing — Calculates your maximum borrow amount using a 70% Loan-to-Value Ratio (LVR) against your BTC holdings.
 Tenure-Based Interest Rates — Interest rate adjusts automatically based on your chosen loan tenure:
-TenureAnnual Interest Rate3 – 12 months12.0%13 – 24 months11.5%25 – 36 months11.0%37 – 48 months10.5%49 – 60 months10.0%
+Tenure Annual Interest Rate
+3 – 12 months12.0%
+13 – 24 months11.5%
+25 – 36 months11.0%
+37 – 48 months10.5%
+49 – 60 months10.0%
 
 Interactive Tenure Slider — Drag the slider (3–60 months) or use quick-select tier buttons to choose your loan period.
 Full Cost Breakdown — Displays borrow amount, 0.5% stamp fee, total interest payable, and total repayment amount.
@@ -66,7 +71,12 @@ MIT License. Free to use, modify, and distribute.
 实时 BTC/MYR 价格 — 页面加载时通过 CoinGecko API 自动获取比特币最新马来西亚令吉报价。
 抵押品借款计算 — 以您的 BTC 持仓为抵押，按 70% 贷款价值比（LVR）计算最高可借金额。
 分期利率体系 — 利率根据您选择的贷款期限自动调整：
-贷款期限年利率3 – 12 个月12.0%13 – 24 个月11.5%25 – 36 个月11.0%37 – 48 个月10.5%49 – 60 个月10.0%
+贷款期限年利率
+3 – 12 个月12.0%
+13 – 24 个月11.5%
+25 – 36 个月11.0%
+37 – 48 个月10.5%
+49 – 60 个月10.0%
 
 交互式期限滑块 — 拖动滑块（3–60 个月）或点击快捷选择按钮，灵活设定贷款期限。
 费用全面拆解 — 显示借款金额、0.5% 印花税、总利息及总还款金额。
