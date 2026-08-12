@@ -514,7 +514,11 @@
             <input type="text" value="BTC (Bitcoin)" disabled>
  
             <div class="field-label">Collateral Amount (BTC)</div>
-            <input type="number" id="btcAmount" value="1.0" step="0.01" oninput="calculate()">
+            <input type="number" id="btcAmount" value="1.0" step="0.01" oninput="onBtcAmountInput()">
+
+            <div class="field-label">Desired Loan Amount (MYR)</div>
+            <input type="number" id="desiredLoan" step="100" oninput="onDesiredLoanInput()">
+            <div class="tenure-months-sub" style="text-align:left; margin-top:-16px; margin-bottom:22px;">Optional &mdash; auto-fills required BTC collateral above</div>
 
             <!-- PACKAGE -->
             <div class="field-label">Loan Package</div>
@@ -746,7 +750,21 @@ function toggleSchedule() {
 }
  
 function fmt(n) { return 'RM ' + Number(n).toLocaleString('en-MY', { minimumFractionDigits: 2, maximumFractionDigits: 2 }); }
- 
+
+function onBtcAmountInput() {
+    calculate();
+}
+
+function onDesiredLoanInput() {
+    const price = parseFloat(document.getElementById('btcPrice').value) || 0;
+    const desiredLoan = parseFloat(document.getElementById('desiredLoan').value) || 0;
+    if (price > 0) {
+        const requiredBtc = desiredLoan / (price * 0.70);
+        document.getElementById('btcAmount').value = requiredBtc.toFixed(8);
+    }
+    calculate();
+}
+
 function calculate() {
     const price = parseFloat(document.getElementById('btcPrice').value) || 0;
     const btc = parseFloat(document.getElementById('btcAmount').value) || 0;
@@ -759,6 +777,11 @@ function calculate() {
     const interest = borrow * rate * (months / 12);
     const total = borrow + fee + interest;
     const monthlyInterest = (borrow * rate) / 12;
+
+    const loanInput = document.getElementById('desiredLoan');
+    if (document.activeElement !== loanInput) {
+        loanInput.value = borrow > 0 ? borrow.toFixed(2) : '';
+    }
 
     document.getElementById('resPrice').textContent = fmt(price);
     document.getElementById('resBorrow').textContent = fmt(borrow);
