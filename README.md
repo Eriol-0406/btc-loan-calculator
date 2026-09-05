@@ -7,6 +7,7 @@ A sleek, browser-based Bitcoin loan calculator that fetches live BTC/MYR prices,
 
 ✨ Features
 
+Live BTC/MYR Chart — chart.html shows a TradingView-style candlestick chart (1m to 1H timeframes) that refreshes once per minute from Binance public market data, converted to MYR with a reference USD/MYR rate.
 Live BTC/MYR Price — Automatically fetches the current Bitcoin price in Malaysian Ringgit via the CoinGecko API on load.
 Collateral-Based Borrowing — Calculates your maximum borrow amount using a 70% Loan-to-Value Ratio (LVR) against your BTC holdings.
 Tenure-Based Interest Rates — Interest rate adjusts automatically based on your chosen loan tenure:
